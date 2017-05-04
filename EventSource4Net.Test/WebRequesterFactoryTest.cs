@@ -18,7 +18,7 @@ namespace EventSource4Net.Test
         }
         public WebRequesterFactoryMock(ServiceResponseMock response)
         {
-             this.WebRequesterMock = new WebRequesterMock(response);
+            this.WebRequesterMock = new WebRequesterMock(response);
         }
         public IWebRequester Create()
         {
@@ -36,14 +36,16 @@ namespace EventSource4Net.Test
             this.Response = response;
         }
 
-        public System.Threading.Tasks.Task<IServerResponse> Get(Uri url)
+        public System.Threading.Tasks.Task<IServerResponse> Get(Uri url, Dictionary<string, string> headers)
         {
             return Task.Factory.StartNew<IServerResponse>(() =>
             {
                 GetCalled.Set();
+                Response.Headers = headers;
                 return Response;
             });
         }
+
     }
 
     class ServiceResponseMock : IServerResponse
@@ -51,6 +53,7 @@ namespace EventSource4Net.Test
         private Stream mStream;
         private StreamWriter mStreamWriter;
         private Uri mUrl;
+        private Dictionary<string, string> mHeaders;
         private HttpStatusCode mStatusCode;
 
         public ManualResetEvent StatusCodeCalled = new ManualResetEvent(false);
@@ -61,6 +64,7 @@ namespace EventSource4Net.Test
             mStatusCode = statusCode;
             mStream = new TestableStream();
             mStreamWriter = new StreamWriter(mStream);
+            mHeaders = new Dictionary<string, string>();
         }
 
         public System.Net.HttpStatusCode StatusCode
@@ -75,6 +79,18 @@ namespace EventSource4Net.Test
         public System.IO.Stream GetResponseStream()
         {
             return mStream;
+        }
+
+        public Dictionary<string, string> Headers
+        {
+            get
+            {
+                return mHeaders;
+            }
+            set
+            {
+                mHeaders = value;
+            }
         }
 
         public Uri ResponseUri
